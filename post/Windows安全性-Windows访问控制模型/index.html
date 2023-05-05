@@ -1,0 +1,197 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Windows安全性-访问控制模型（待更新 | Bugcheck8&#39;s Blog</title>
+<link rel="shortcut icon" href="https://bugcheck8.github.io/favicon.ico?v=1683311183839">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://bugcheck8.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Windows安全性-访问控制模型（待更新 | Bugcheck8&#39;s Blog - Atom Feed" href="https://bugcheck8.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="一、访问控制模型是什么？
+（1）基础概念
+每个对象都有个安全描述符，当创建出一个对象时，其中就包含对象的安全属性 SECURITY_DESCRIPTOR可以指定，包含GENERIC_READ |GENERIC_WRITE |GENERIC_..." />
+    <meta name="keywords" content="Windows安全权限" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://bugcheck8.github.io">
+  <img class="avatar" src="https://bugcheck8.github.io/images/avatar.png?v=1683311183839" alt="">
+  </a>
+  <h1 class="site-title">
+    Bugcheck8&#39;s Blog
+  </h1>
+  <p class="site-description">
+    Windows Kernel Security
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="https://bugcheck8.github.io/tags" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Bugcheck8/" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Windows安全性-访问控制模型（待更新
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-05-01
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://bugcheck8.github.io/tag/OVB3The5D/" class="post-tag">
+                  # Windows安全权限
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="一-访问控制模型是什么">一、访问控制模型是什么？</h3>
+<p>（1）基础概念<br>
+每个对象都有个安全描述符，当创建出一个对象时，其中就包含对象的安全属性 SECURITY_DESCRIPTOR可以指定，包含GENERIC_READ |GENERIC_WRITE |GENERIC_EXECUTE（读取、写入和执行）三种权限，默认是GENERIC_ALL，即完全访问权限。同时，用来描述SECURITY_DESCRIPTOR有特定的专业术语叫做安全描述符定义语言（SDLL），在创建设备安全指定安全属性（IoCreateDeviceSecure）时可在驱动的INF文件中进行传递。<br>
+（2）用法应用<br>
+设备对象的 SDDL 字符串的格式为&quot;D：P&quot;，后跟窗体&quot;(A;”的一个或多个表达式;Access;;;SID) &quot; SID 值指定一个安全标识符，用于确定 Access 值应用于谁 (，例如用户或组) 。 Access 值指定 SID 允许的访问权限。 Access 和 SID 值如下所示：<br>
+以下代码可用于指定通用访问权限</p>
+<pre><code>
+GA       GENERIC_ALL                     //包含以下的所用权限
+GR       GENERIC_READ
+GW      GENERIC_WRITE
+Gx        GENERIC_EXECUTE
+</code></pre>
+<p>以下代码可用于指定特定的访问权限</p>
+<pre><code>RC         READ_CONTROL
+SD         DELETE
+Wd        WRITE_DAC
+WO        WRITE_OWNER
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6%E6%A8%A1%E5%9E%8B%E6%98%AF%E4%BB%80%E4%B9%88">一、访问控制模型是什么？</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://bugcheck8.github.io/post/x64保护模式-指令架构/">
+              <h3 class="post-title">
+                x64保护模式-指令架构
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://bugcheck8.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

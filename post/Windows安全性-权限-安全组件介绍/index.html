@@ -1,0 +1,243 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>(第一章)1.1 Windows安全性-权限-安全组件介绍 | Bugcheck8&#39;s Blog</title>
+<link rel="shortcut icon" href="https://bugcheck8.github.io/favicon.ico?v=1683311183839">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://bugcheck8.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="(第一章)1.1 Windows安全性-权限-安全组件介绍 | Bugcheck8&#39;s Blog - Atom Feed" href="https://bugcheck8.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="一、安全系统组件
+本系列将从Windows内核角度解析Windows权限划分机制，包括安全框架基础概念、Token权限解析、ACL划分等。在进入Windows安全描述符之前，我有必要先介绍下安全系统组件。
+windows的安全性由核心组件和..." />
+    <meta name="keywords" content="Windows安全权限" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://bugcheck8.github.io">
+  <img class="avatar" src="https://bugcheck8.github.io/images/avatar.png?v=1683311183839" alt="">
+  </a>
+  <h1 class="site-title">
+    Bugcheck8&#39;s Blog
+  </h1>
+  <p class="site-description">
+    Windows Kernel Security
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="https://bugcheck8.github.io/tags" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Bugcheck8/" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              (第一章)1.1 Windows安全性-权限-安全组件介绍
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-05-04
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://bugcheck8.github.io/tag/OVB3The5D/" class="post-tag">
+                  # Windows安全权限
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="一-安全系统组件">一、安全系统组件</h3>
+<p>本系列将从Windows内核角度解析Windows权限划分机制，包括安全框架基础概念、Token权限解析、ACL划分等。在进入Windows安全描述符之前，我有必要先介绍下安全系统组件。<br>
+windows的安全性由核心组件和数据库构成：</p>
+<p>（1）安全引用监视器（SRM)。</p>
+<pre><code>由内核文件Ntoskrnl.exe负责
+主要是针对对象执行的安全访问检查、操作特权（用户权限），以及系统审核日志等信息。
+</code></pre>
+<p>（2）本地安全机构子系统服务（lsass)。</p>
+<pre><code>由lsass.exe负责本地系统安全策略等（例如允许哪些用户登录计算机，密码策略）
+Lsasrv.dll是lsass用的一个库，实现了大部分lsass的功能。
+</code></pre>
+<p>（3) LSAIso.exe。</p>
+<pre><code>由lsass使用（需要在WIN10和Windows Server 2016中进行相应配置），也叫做Credential Guard,用于储存用户的令牌散列，而非将其保存在Lsass中。
+Lsaiso.exe运行在YTL1下的Trustlet(被隔离的用户模式进程)，常规进程或内核无法访问该进程的地址空间
+Lsass本身储存了在与LSAIso（通过ALPC）通信时所需的密码散列加密后的块。
+</code></pre>
+<p>（4）Lsass策略数据库。</p>
+<pre><code>该数据库包含本地系统安全策略设置，储存在注册表HKLM\SECURITY键下的一个受ACL保护的区域
+包含由域委托来的信息，比如登录尝试的身份验证，登录分配的权限等。
+</code></pre>
+<p>（5）安全账户管理（SRM）。</p>
+<pre><code>负责管理数据库在本机定义的用户名和组信息
+该服务通过Samsrv.dll实现，会被载入lsass进程。
+</code></pre>
+<p>（6）SAM数据库。</p>
+<pre><code>包含本地账户和密码信息，但是不包含域信息，该数据库存储在注册表HKLM\SAM键下。
+</code></pre>
+<p>（7）Active Diretory。</p>
+<pre><code>储存域对象，包含用户、组、计算机等信息
+Active Directory服务器通过Ntdsa.dll实现，运行在lsass中。这一块后续还会详细描述。
+</code></pre>
+<p>（8）身份证验证包。</p>
+<pre><code>身份验证DLL用于检查特定用户与密码是否匹配，如果匹配，会发送给lsass进程告知。
+lsass会用这些信息来生成token。
+</code></pre>
+<p>（9）安全登录管理器（Winlogon)。</p>
+<pre><code>负责相应SAS，管理交互式登录会话
+例如当用户登陆时，winlogon会创建用户的第一个进程。（Bugcheck8 version watermark)
+</code></pre>
+<p>（10）登录用户界面（LogonUI)。</p>
+<pre><code>运行了一个LogonUI镜像，为用户提供验证身份所需要的登录界面。
+LogonUI可使用凭据通过多种方法查询用户凭据。
+</code></pre>
+<p>（11）网络登录服务（Netlogon)。</p>
+<pre><code>由Netlogon.dll提供功能，承载与Svchost中，可建立到域控的通道，发送安全请求，比如交互式登录。
+Netlogon还可以用于Active Directory登录。
+</code></pre>
+<p>（12）内核安全设备驱动程序（KSecDD)。</p>
+<pre><code>函数库为Ksecdd.sys，实现过程调用接口，其他内核模式安全组件加密文件系统（EFS），可以用它与Lsass通信。
+</code></pre>
+<p>（13）Applocker 。</p>
+<pre><code>决定文件的权限归属，使用的是AppId.sys驱动，和AppIdSvc.dll，运行在Svchost进程中。
+</code></pre>
+<p>（14）凭据提供程序（CP）。</p>
+<pre><code>执行SAS时由Winlogon按需启动
+用于获取用户的用户名和密码，PIN码、生物验证识别码等。
+</code></pre>
+<p>Windows安全组件关联图：<br>
+<img src="https://bugcheck8.github.io/post-images/1683220720110.jpg" alt="" loading="lazy"></p>
+<pre><code>1、内核模式的SRM和Lsass使用ALPC设施进行通信。
+2、在系统初始化的过程中，SRM创建一个名为SeRmCommandPort的端口并提供给lsass进行连接。当lsass启动后，将创建一个名为SeLsaCommandPort的ALPC端口。SRM将连接到这个端口，并创建出特权通信端口、共享的内存节。
+3、在连接调用中传递句柄。在连接成功后，会关闭与端口的连接。
+
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E5%AE%89%E5%85%A8%E7%B3%BB%E7%BB%9F%E7%BB%84%E4%BB%B6">一、安全系统组件</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://bugcheck8.github.io/post/bao-hu-mo-shi-duan-miao-shu-fu-shu-xing/">
+              <h3 class="post-title">
+                保护模式-段描述符属性
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://bugcheck8.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

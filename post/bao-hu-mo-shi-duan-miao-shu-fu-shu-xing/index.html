@@ -1,0 +1,203 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>保护模式-段描述符属性 | Bugcheck8&#39;s Blog</title>
+<link rel="shortcut icon" href="https://bugcheck8.github.io/favicon.ico?v=1683311183839">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://bugcheck8.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="保护模式-段描述符属性 | Bugcheck8&#39;s Blog - Atom Feed" href="https://bugcheck8.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="一、段描述符属性
+
+S位 
+（1）S = 1 代码段或者数据段描述符
+（2）S = 0 系统段描述符
+P位
+（1）P = 1 代表当前段描述符有效
+（2）P = 0 代表当前段描述符无效
+
+type 域
+Example:
+（1）当S  =1..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://bugcheck8.github.io">
+  <img class="avatar" src="https://bugcheck8.github.io/images/avatar.png?v=1683311183839" alt="">
+  </a>
+  <h1 class="site-title">
+    Bugcheck8&#39;s Blog
+  </h1>
+  <p class="site-description">
+    Windows Kernel Security
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="https://bugcheck8.github.io/tags" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Bugcheck8/" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              保护模式-段描述符属性
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-05-01
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="一-段描述符属性">一、段描述符属性</h3>
+<figure data-type="image" tabindex="1"><img src="https://bugcheck8.github.io/post-images/1682941759995.png" alt="" loading="lazy"></figure>
+<pre><code>S位 
+（1）S = 1 代码段或者数据段描述符
+（2）S = 0 系统段描述符
+P位
+（1）P = 1 代表当前段描述符有效
+（2）P = 0 代表当前段描述符无效
+</code></pre>
+<p>type 域<br>
+Example:<br>
+（1）当S  =1 时，描述数据段或者代码段<br>
+<img src="https://bugcheck8.github.io/post-images/1683213372625.png" alt="" loading="lazy"></p>
+<pre><code>00cf9b00`0000ffff 其中高位的第8位如果&gt;=8，即为代码段，比如这里的b大于等于8，那么他就是代码段，否则则是数据段
+</code></pre>
+<p>（2）当 S = 0 时，描述系统段描述符</p>
+<figure data-type="image" tabindex="2"><img src="https://bugcheck8.github.io/post-images/1683213900266.png" alt="" loading="lazy"></figure>
+<pre><code>80008954`a1680068  描述的是系统段描述符，这里的type域是9，即1001，描述的是一个32位的tss段。
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E6%AE%B5%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%B1%9E%E6%80%A7">一、段描述符属性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://bugcheck8.github.io/post/Windows安全性-Windows访问控制模型/">
+              <h3 class="post-title">
+                Windows安全性-访问控制模型（待更新
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://bugcheck8.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

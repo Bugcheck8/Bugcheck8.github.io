@@ -1,0 +1,205 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>x64保护模式-指令架构 | Bugcheck8&#39;s Blog</title>
+<link rel="shortcut icon" href="https://bugcheck8.github.io/favicon.ico?v=1683311183839">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://bugcheck8.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="x64保护模式-指令架构 | Bugcheck8&#39;s Blog - Atom Feed" href="https://bugcheck8.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="一、寄存器架构
+（1）在x86中,存在8个通用寄存器 eax,ebx,edx,ecx,esi,edi,esp,ebp。而在x64中新增了r8-r15这些通用寄存器。并且新增了8位寄存器 spl bpl sil dil。
+```
+Examle..." />
+    <meta name="keywords" content="x64保护模式" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://bugcheck8.github.io">
+  <img class="avatar" src="https://bugcheck8.github.io/images/avatar.png?v=1683311183839" alt="">
+  </a>
+  <h1 class="site-title">
+    Bugcheck8&#39;s Blog
+  </h1>
+  <p class="site-description">
+    Windows Kernel Security
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="https://bugcheck8.github.io/tags" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Bugcheck8/" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              x64保护模式-指令架构
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-05-01
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://bugcheck8.github.io/tag/hFToFEIqd/" class="post-tag">
+                  # x64保护模式
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="一-寄存器架构">一、寄存器架构</h2>
+<p>（1）在x86中,存在8个通用寄存器 eax,ebx,edx,ecx,esi,edi,esp,ebp。而在x64中新增了r8-r15这些通用寄存器。并且新增了8位寄存器 spl bpl sil dil。</p>
+<pre><code>```
+Examle:
+mov spl,0x0 //影响寄存器的最后2字节
+```
+</code></pre>
+<p>（2）对r8-r15进行拆分，例如,r8w是16位的, r8d 是32位的。同样,增加了9个128位的浮点寄存器,XMM0-XMM8,是用于多媒体。<br>
+（3）x64没有pushad/aq这些指令。因此x64想要保存堆栈只能依次push来保存堆栈和寄存器环境。<br>
+<img src="https://bugcheck8.github.io/post-images/1682877521578.png" alt="" loading="lazy"></p>
+<h2 id="二-与x86的地址区别">二、与x86的地址区别</h2>
+<p>1、x64中,线性地址只有48位有效,可以理解为从0x0-0xffffffffffff。0-700000000000是UserAddress,800000000000-ffffffffffff是内核空间<br>
+<img src="https://bugcheck8.github.io/post-images/1682877803305.png" alt="" loading="lazy"><br>
+（1）其中高16位是地址符号扩展，要么全1,要么全0。<br>
+（2）canonical和non-canonical地址的区别是高16位若全为0；1则是canonical(规范地址)</p>
+<h3 id="注意事项">注意事项：</h3>
+<p>假设存在地址0xFFFF800000000000<br>
+但是要注意的是微软的内核地址会在高位补上一个F，也就是0xfffff80000000000,从80000000000开始，只用了44位的地址。</p>
+<h2 id="三-全局变量寻址">三、全局变量寻址</h2>
+<p>（1）x86架构下,全局变量的寻址直接是ds:[consant],但是x64下不是这样,是RIP+offset偏移。也就是说x64在编译的时候就确定了变量的地址，<br>
+Example:<br>
+<img src="https://bugcheck8.github.io/post-images/1682878655757.png" alt="" loading="lazy"><br>
+这个全局变量的地址计算==RIP+7+0xA81B=17F60C000。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E5%AF%84%E5%AD%98%E5%99%A8%E6%9E%B6%E6%9E%84">一、寄存器架构</a></li>
+<li><a href="#%E4%BA%8C-%E4%B8%8Ex86%E7%9A%84%E5%9C%B0%E5%9D%80%E5%8C%BA%E5%88%AB">二、与x86的地址区别</a>
+<ul>
+<li><a href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9">注意事项：</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%E5%AF%BB%E5%9D%80">三、全局变量寻址</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://bugcheck8.github.io/post/保护模式-段描述符与段选择子/">
+              <h3 class="post-title">
+                保护模式-段描述符与段选择子
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://bugcheck8.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

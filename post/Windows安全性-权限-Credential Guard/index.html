@@ -1,0 +1,200 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>(第一章)1.2  Windows安全性-权限-Credential Guard | Bugcheck8&#39;s Blog</title>
+<link rel="shortcut icon" href="https://bugcheck8.github.io/favicon.ico?v=1683311183839">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://bugcheck8.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="(第一章)1.2  Windows安全性-权限-Credential Guard | Bugcheck8&#39;s Blog - Atom Feed" href="https://bugcheck8.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="一、Credential Guard是什么？
+我们第一章1.1安全组件中有提到一个名词LSAIso.exe。它用于储存用户的令牌散列，运行在VTL 1下的Trustlet。在了解它之前，我们需要介绍几个名词：
+(1)密码
+用户凭据
+
+(2)..." />
+    <meta name="keywords" content="Windows安全权限" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://bugcheck8.github.io">
+  <img class="avatar" src="https://bugcheck8.github.io/images/avatar.png?v=1683311183839" alt="">
+  </a>
+  <h1 class="site-title">
+    Bugcheck8&#39;s Blog
+  </h1>
+  <p class="site-description">
+    Windows Kernel Security
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="https://bugcheck8.github.io/tags" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Bugcheck8/" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              (第一章)1.2  Windows安全性-权限-Credential Guard
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-05-06
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+                <a href="https://bugcheck8.github.io/tag/OVB3The5D/" class="post-tag">
+                  # Windows安全权限
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h3 id="一-credential-guard是什么">一、Credential Guard是什么？</h3>
+<p>我们第一章1.1安全组件中有提到一个名词LSAIso.exe。它用于储存用户的令牌散列，运行在VTL 1下的Trustlet。在了解它之前，我们需要介绍几个名词：<br>
+(1)密码</p>
+<pre><code>用户凭据
+</code></pre>
+<p>(2)NT单项函数（NTOWF）</p>
+<pre><code>NTLM协议用户身份用的MD4散列
+</code></pre>
+<p>(3)票证授予票证（TGT)</p>
+<pre><code>你可以将它理解为NTLM，也是一种验证方式。这是Windows使用的最新的远程身份验证机制（Kerberos），此协议是Windows Active Directory 默认使用身份验证机制，且在Windows Server2016上强制使用。在用户成功登录后，TGT和密钥会提供给计算机（类似于NTLM验证）。
+</code></pre>
+<h3 id="二-credential-guard的作用待更新">二、Credential Guard的作用(待更新)</h3>
+<p>(1)保护密码<br>
+(2)保护NTOWF/TGT密钥<br>
+(3)保护通信<br>
+(4)UEFI锁定<br>
+(5)身份验证策略和Armored Kerberos</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-credential-guard%E6%98%AF%E4%BB%80%E4%B9%88">一、Credential Guard是什么？</a></li>
+<li><a href="#%E4%BA%8C-credential-guard%E7%9A%84%E4%BD%9C%E7%94%A8%E5%BE%85%E6%9B%B4%E6%96%B0">二、Credential Guard的作用(待更新)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://bugcheck8.github.io/post/Windows安全性-权限-安全组件介绍/">
+              <h3 class="post-title">
+                (第一章)1.1 Windows安全性-权限-安全组件介绍
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://bugcheck8.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

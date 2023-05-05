@@ -1,0 +1,213 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>保护模式-段描述符与段选择子 | Bugcheck8&#39;s Blog</title>
+<link rel="shortcut icon" href="https://bugcheck8.github.io/favicon.ico?v=1683311183839">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://bugcheck8.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="保护模式-段描述符与段选择子 | Bugcheck8&#39;s Blog - Atom Feed" href="https://bugcheck8.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="一、段描述符结构
+
+Example: 段描述符【00cf9b00`0000ffff 】拆分
+limit:fffff
+base:00000000
+type:3
+s:1
+DPL:0
+p:1  短描述符是否有效性
+avl:0
+def:0
+d/b:..." />
+    <meta name="keywords" content="X86保护模式" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://bugcheck8.github.io">
+  <img class="avatar" src="https://bugcheck8.github.io/images/avatar.png?v=1683311183839" alt="">
+  </a>
+  <h1 class="site-title">
+    Bugcheck8&#39;s Blog
+  </h1>
+  <p class="site-description">
+    Windows Kernel Security
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="https://bugcheck8.github.io/tags" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/Bugcheck8/" target="_blank">
+          <i class="ri-github-line"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              保护模式-段描述符与段选择子
+            </h2>
+            <div class="post-info">
+              <span>
+                2023-04-30
+              </span>
+              <span>
+                1 min read
+              </span>
+              
+                <a href="https://bugcheck8.github.io/tag/4ZsaWhX8K/" class="post-tag">
+                  # X86保护模式
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content" v-pre>
+                <h2 id="一-段描述符结构">一、段描述符结构</h2>
+<figure data-type="image" tabindex="1"><img src="https://bugcheck8.github.io/post-images/1682872923970.png" alt="" loading="lazy"></figure>
+<pre><code>Example: 段描述符【00cf9b00`0000ffff 】拆分
+limit:fffff
+base:00000000
+type:3
+s:1
+DPL:0
+p:1  短描述符是否有效性
+avl:0
+def:0
+d/b:1
+g:1  G:粒度  g=1 代表是页单位，G=0 字节单位 
+</code></pre>
+<h2 id="二-段选择子结构">二、段选择子结构</h2>
+<figure data-type="image" tabindex="2"><img src="https://bugcheck8.github.io/post-images/1682873413171.png" alt="" loading="lazy"></figure>
+<p>段选择子是一个16位的数<br>
+RPL:请求特权级别<br>
+TI：<br>
+Ti =0 查GDT表<br>
+Ti =1 查IDT表<br>
+Index：GDT或者IDT的索引</p>
+<pre><code>Example：根据段选择子【0023】查找段描述符
+0000 0000 0010 0011
+RPL:11
+TI:0
+Index:100
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E6%AE%B5%E6%8F%8F%E8%BF%B0%E7%AC%A6%E7%BB%93%E6%9E%84">一、段描述符结构</a></li>
+<li><a href="#%E4%BA%8C-%E6%AE%B5%E9%80%89%E6%8B%A9%E5%AD%90%E7%BB%93%E6%9E%84">二、段选择子结构</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://bugcheck8.github.io/post/保护模式-段寄存器属性探测/">
+              <h3 class="post-title">
+                保护模式-段寄存器属性探测
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  
+  <a class="rss" href="https://bugcheck8.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

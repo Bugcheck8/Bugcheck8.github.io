@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://bugcheck8.github.io</id>
+    <title>Bugcheck8&apos;s Blog</title>
+    <updated>2023-05-05T18:27:48.507Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://bugcheck8.github.io"/>
+    <link rel="self" href="https://bugcheck8.github.io/atom.xml"/>
+    <subtitle>Windows Kernel Security</subtitle>
+    <logo>https://bugcheck8.github.io/images/avatar.png</logo>
+    <icon>https://bugcheck8.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2023, Bugcheck8&apos;s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[(第一章)1.2  Windows安全性-权限-Credential Guard]]></title>
+        <id>https://bugcheck8.github.io/post/Windows安全性-权限-Credential Guard/</id>
+        <link href="https://bugcheck8.github.io/post/Windows安全性-权限-Credential Guard/">
+        </link>
+        <updated>2023-05-05T18:03:42.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="一-credential-guard是什么">一、Credential Guard是什么？</h3>
+<p>我们第一章1.1安全组件中有提到一个名词LSAIso.exe。它用于储存用户的令牌散列，运行在VTL 1下的Trustlet。在了解它之前，我们需要介绍几个名词：<br>
+(1)密码</p>
+<pre><code>用户凭据
+</code></pre>
+<p>(2)NT单项函数（NTOWF）</p>
+<pre><code>NTLM协议用户身份用的MD4散列
+</code></pre>
+<p>(3)票证授予票证（TGT)</p>
+<pre><code>你可以将它理解为NTLM，也是一种验证方式。这是Windows使用的最新的远程身份验证机制（Kerberos），此协议是Windows Active Directory 默认使用身份验证机制，且在Windows Server2016上强制使用。在用户成功登录后，TGT和密钥会提供给计算机（类似于NTLM验证）。
+</code></pre>
+<h3 id="二-credential-guard的作用待更新">二、Credential Guard的作用(待更新)</h3>
+<p>(1)保护密码<br>
+(2)保护NTOWF/TGT密钥<br>
+(3)保护通信<br>
+(4)UEFI锁定<br>
+(5)身份验证策略和Armored Kerberos</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[(第一章)1.1 Windows安全性-权限-安全组件介绍]]></title>
+        <id>https://bugcheck8.github.io/post/Windows安全性-权限-安全组件介绍/</id>
+        <link href="https://bugcheck8.github.io/post/Windows安全性-权限-安全组件介绍/">
+        </link>
+        <updated>2023-05-04T15:41:28.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="一-安全系统组件">一、安全系统组件</h3>
+<p>本系列将从Windows内核角度解析Windows权限划分机制，包括安全框架基础概念、Token权限解析、ACL划分等。在进入Windows安全描述符之前，我有必要先介绍下安全系统组件。<br>
+windows的安全性由核心组件和数据库构成：</p>
+<p>（1）安全引用监视器（SRM)。</p>
+<pre><code>由内核文件Ntoskrnl.exe负责
+主要是针对对象执行的安全访问检查、操作特权（用户权限），以及系统审核日志等信息。
+</code></pre>
+<p>（2）本地安全机构子系统服务（lsass)。</p>
+<pre><code>由lsass.exe负责本地系统安全策略等（例如允许哪些用户登录计算机，密码策略）
+Lsasrv.dll是lsass用的一个库，实现了大部分lsass的功能。
+</code></pre>
+<p>（3) LSAIso.exe。</p>
+<pre><code>由lsass使用（需要在WIN10和Windows Server 2016中进行相应配置），也叫做Credential Guard,用于储存用户的令牌散列，而非将其保存在Lsass中。
+Lsaiso.exe运行在YTL1下的Trustlet(被隔离的用户模式进程)，常规进程或内核无法访问该进程的地址空间
+Lsass本身储存了在与LSAIso（通过ALPC）通信时所需的密码散列加密后的块。
+</code></pre>
+<p>（4）Lsass策略数据库。</p>
+<pre><code>该数据库包含本地系统安全策略设置，储存在注册表HKLM\SECURITY键下的一个受ACL保护的区域
+包含由域委托来的信息，比如登录尝试的身份验证，登录分配的权限等。
+</code></pre>
+<p>（5）安全账户管理（SRM）。</p>
+<pre><code>负责管理数据库在本机定义的用户名和组信息
+该服务通过Samsrv.dll实现，会被载入lsass进程。
+</code></pre>
+<p>（6）SAM数据库。</p>
+<pre><code>包含本地账户和密码信息，但是不包含域信息，该数据库存储在注册表HKLM\SAM键下。
+</code></pre>
+<p>（7）Active Diretory。</p>
+<pre><code>储存域对象，包含用户、组、计算机等信息
+Active Directory服务器通过Ntdsa.dll实现，运行在lsass中。这一块后续还会详细描述。
+</code></pre>
+<p>（8）身份证验证包。</p>
+<pre><code>身份验证DLL用于检查特定用户与密码是否匹配，如果匹配，会发送给lsass进程告知。
+lsass会用这些信息来生成token。
+</code></pre>
+<p>（9）安全登录管理器（Winlogon)。</p>
+<pre><code>负责相应SAS，管理交互式登录会话
+例如当用户登陆时，winlogon会创建用户的第一个进程。（Bugcheck8 version watermark)
+</code></pre>
+<p>（10）登录用户界面（LogonUI)。</p>
+<pre><code>运行了一个LogonUI镜像，为用户提供验证身份所需要的登录界面。
+LogonUI可使用凭据通过多种方法查询用户凭据。
+</code></pre>
+<p>（11）网络登录服务（Netlogon)。</p>
+<pre><code>由Netlogon.dll提供功能，承载与Svchost中，可建立到域控的通道，发送安全请求，比如交互式登录。
+Netlogon还可以用于Active Directory登录。
+</code></pre>
+<p>（12）内核安全设备驱动程序（KSecDD)。</p>
+<pre><code>函数库为Ksecdd.sys，实现过程调用接口，其他内核模式安全组件加密文件系统（EFS），可以用它与Lsass通信。
+</code></pre>
+<p>（13）Applocker 。</p>
+<pre><code>决定文件的权限归属，使用的是AppId.sys驱动，和AppIdSvc.dll，运行在Svchost进程中。
+</code></pre>
+<p>（14）凭据提供程序（CP）。</p>
+<pre><code>执行SAS时由Winlogon按需启动
+用于获取用户的用户名和密码，PIN码、生物验证识别码等。
+</code></pre>
+<p>Windows安全组件关联图：<br>
+<img src="https://bugcheck8.github.io/post-images/1683220720110.jpg" alt="" loading="lazy"></p>
+<pre><code>1、内核模式的SRM和Lsass使用ALPC设施进行通信。
+2、在系统初始化的过程中，SRM创建一个名为SeRmCommandPort的端口并提供给lsass进行连接。当lsass启动后，将创建一个名为SeLsaCommandPort的ALPC端口。SRM将连接到这个端口，并创建出特权通信端口、共享的内存节。
+3、在连接调用中传递句柄。在连接成功后，会关闭与端口的连接。
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[保护模式-段描述符属性]]></title>
+        <id>https://bugcheck8.github.io/post/bao-hu-mo-shi-duan-miao-shu-fu-shu-xing/</id>
+        <link href="https://bugcheck8.github.io/post/bao-hu-mo-shi-duan-miao-shu-fu-shu-xing/">
+        </link>
+        <updated>2023-05-01T11:39:37.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="一-段描述符属性">一、段描述符属性</h3>
+<figure data-type="image" tabindex="1"><img src="https://bugcheck8.github.io/post-images/1682941759995.png" alt="" loading="lazy"></figure>
+<pre><code>S位 
+（1）S = 1 代码段或者数据段描述符
+（2）S = 0 系统段描述符
+P位
+（1）P = 1 代表当前段描述符有效
+（2）P = 0 代表当前段描述符无效
+</code></pre>
+<p>type 域<br>
+Example:<br>
+（1）当S  =1 时，描述数据段或者代码段<br>
+<img src="https://bugcheck8.github.io/post-images/1683213372625.png" alt="" loading="lazy"></p>
+<pre><code>00cf9b00`0000ffff 其中高位的第8位如果&gt;=8，即为代码段，比如这里的b大于等于8，那么他就是代码段，否则则是数据段
+</code></pre>
+<p>（2）当 S = 0 时，描述系统段描述符</p>
+<figure data-type="image" tabindex="2"><img src="https://bugcheck8.github.io/post-images/1683213900266.png" alt="" loading="lazy"></figure>
+<pre><code>80008954`a1680068  描述的是系统段描述符，这里的type域是9，即1001，描述的是一个32位的tss段。
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Windows安全性-访问控制模型（待更新]]></title>
+        <id>https://bugcheck8.github.io/post/Windows安全性-Windows访问控制模型/</id>
+        <link href="https://bugcheck8.github.io/post/Windows安全性-Windows访问控制模型/">
+        </link>
+        <updated>2023-04-30T22:51:44.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="一-访问控制模型是什么">一、访问控制模型是什么？</h3>
+<p>（1）基础概念<br>
+每个对象都有个安全描述符，当创建出一个对象时，其中就包含对象的安全属性 SECURITY_DESCRIPTOR可以指定，包含GENERIC_READ |GENERIC_WRITE |GENERIC_EXECUTE（读取、写入和执行）三种权限，默认是GENERIC_ALL，即完全访问权限。同时，用来描述SECURITY_DESCRIPTOR有特定的专业术语叫做安全描述符定义语言（SDLL），在创建设备安全指定安全属性（IoCreateDeviceSecure）时可在驱动的INF文件中进行传递。<br>
+（2）用法应用<br>
+设备对象的 SDDL 字符串的格式为&quot;D：P&quot;，后跟窗体&quot;(A;”的一个或多个表达式;Access;;;SID) &quot; SID 值指定一个安全标识符，用于确定 Access 值应用于谁 (，例如用户或组) 。 Access 值指定 SID 允许的访问权限。 Access 和 SID 值如下所示：<br>
+以下代码可用于指定通用访问权限</p>
+<pre><code>
+GA       GENERIC_ALL                     //包含以下的所用权限
+GR       GENERIC_READ
+GW      GENERIC_WRITE
+Gx        GENERIC_EXECUTE
+</code></pre>
+<p>以下代码可用于指定特定的访问权限</p>
+<pre><code>RC         READ_CONTROL
+SD         DELETE
+Wd        WRITE_DAC
+WO        WRITE_OWNER
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[x64保护模式-指令架构]]></title>
+        <id>https://bugcheck8.github.io/post/x64保护模式-指令架构/</id>
+        <link href="https://bugcheck8.github.io/post/x64保护模式-指令架构/">
+        </link>
+        <updated>2023-04-30T17:53:15.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="一-寄存器架构">一、寄存器架构</h2>
+<p>（1）在x86中,存在8个通用寄存器 eax,ebx,edx,ecx,esi,edi,esp,ebp。而在x64中新增了r8-r15这些通用寄存器。并且新增了8位寄存器 spl bpl sil dil。</p>
+<pre><code>```
+Examle:
+mov spl,0x0 //影响寄存器的最后2字节
+```
+</code></pre>
+<p>（2）对r8-r15进行拆分，例如,r8w是16位的, r8d 是32位的。同样,增加了9个128位的浮点寄存器,XMM0-XMM8,是用于多媒体。<br>
+（3）x64没有pushad/aq这些指令。因此x64想要保存堆栈只能依次push来保存堆栈和寄存器环境。<br>
+<img src="https://bugcheck8.github.io/post-images/1682877521578.png" alt="" loading="lazy"></p>
+<h2 id="二-与x86的地址区别">二、与x86的地址区别</h2>
+<p>1、x64中,线性地址只有48位有效,可以理解为从0x0-0xffffffffffff。0-700000000000是UserAddress,800000000000-ffffffffffff是内核空间<br>
+<img src="https://bugcheck8.github.io/post-images/1682877803305.png" alt="" loading="lazy"><br>
+（1）其中高16位是地址符号扩展，要么全1,要么全0。<br>
+（2）canonical和non-canonical地址的区别是高16位若全为0；1则是canonical(规范地址)</p>
+<h3 id="注意事项">注意事项：</h3>
+<p>假设存在地址0xFFFF800000000000<br>
+但是要注意的是微软的内核地址会在高位补上一个F，也就是0xfffff80000000000,从80000000000开始，只用了44位的地址。</p>
+<h2 id="三-全局变量寻址">三、全局变量寻址</h2>
+<p>（1）x86架构下,全局变量的寻址直接是ds:[consant],但是x64下不是这样,是RIP+offset偏移。也就是说x64在编译的时候就确定了变量的地址，<br>
+Example:<br>
+<img src="https://bugcheck8.github.io/post-images/1682878655757.png" alt="" loading="lazy"><br>
+这个全局变量的地址计算==RIP+7+0xA81B=17F60C000。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[保护模式-段描述符与段选择子]]></title>
+        <id>https://bugcheck8.github.io/post/保护模式-段描述符与段选择子/</id>
+        <link href="https://bugcheck8.github.io/post/保护模式-段描述符与段选择子/">
+        </link>
+        <updated>2023-04-30T15:36:49.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="一-段描述符结构">一、段描述符结构</h2>
+<figure data-type="image" tabindex="1"><img src="https://bugcheck8.github.io/post-images/1682872923970.png" alt="" loading="lazy"></figure>
+<pre><code>Example: 段描述符【00cf9b00`0000ffff 】拆分
+limit:fffff
+base:00000000
+type:3
+s:1
+DPL:0
+p:1  短描述符是否有效性
+avl:0
+def:0
+d/b:1
+g:1  G:粒度  g=1 代表是页单位，G=0 字节单位 
+</code></pre>
+<h2 id="二-段选择子结构">二、段选择子结构</h2>
+<figure data-type="image" tabindex="2"><img src="https://bugcheck8.github.io/post-images/1682873413171.png" alt="" loading="lazy"></figure>
+<p>段选择子是一个16位的数<br>
+RPL:请求特权级别<br>
+TI：<br>
+Ti =0 查GDT表<br>
+Ti =1 查IDT表<br>
+Index：GDT或者IDT的索引</p>
+<pre><code>Example：根据段选择子【0023】查找段描述符
+0000 0000 0010 0011
+RPL:11
+TI:0
+Index:100
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[保护模式-段寄存器属性探测]]></title>
+        <id>https://bugcheck8.github.io/post/保护模式-段寄存器属性探测/</id>
+        <link href="https://bugcheck8.github.io/post/保护模式-段寄存器属性探测/">
+        </link>
+        <updated>2023-04-30T15:06:17.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="一-保护模式保护的是什么">一、保护模式保护的是什么？</h2>
+<pre><code>Example:  
+MOV DWORD PTR DS:[1234567],EAX  
+
+
+这行的意思是访问ds.base+1234567 这个地址    
+如果想要访问该地址，需要具备2个条件：    
+(1)段限制：ds寄存器的Attr属性是否具备可写属性    
+(2)页限制：虚拟地址1234567是否超过了三环的最大访问限制  
+</code></pre>
+<h2 id="二-段寄存器的长度是多少">二、段寄存器的长度是多少？</h2>
+<pre><code>段寄存器的长度共96位     
+Selector  16位    
+Attribut  16位         
+Base      32位     
+Limit     32位 
+</code></pre>
+<pre><code>属性探测：
+#include &quot;stdafx.h&quot;
+#include &lt;Windows.h&gt;
+
+int value = 0x100;
+int value2 = 0;
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+
+	OpenProcess(NULL,NULL,NULL);
+	value = 100;
+	__asm
+	{
+		mov ax,cs;
+		mov ds,ax;
+		mov eax,100;
+		mov dword ptr ds:[value],eax   //这里会报错，实际上是访问了cs.base+0x100处，cs是不可写的
+		mov ax,es;
+		mov ds,ax;
+	}
+	
+
+	printf(&quot;value = %x\r\n&quot;,value2);
+	system(&quot;pause&quot;);
+	return 0;
+}
+
+</code></pre>
+<h2 id="三-x86段寄存器成员介绍附件1">三、x86段寄存器成员介绍（附件1）</h2>
+<figure data-type="image" tabindex="1"><img src="https://bugcheck8.github.io/post-images/1682867399718.png" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+</feed>
